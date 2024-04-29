@@ -1,74 +1,4 @@
-// "use client";
-// import axios from "axios";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { useEffect, useState } from "react";
-
-// export default function Home() {
-//   const [data, setData] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [chatlog, setChatlog] = useState([]);
-//   const [error, setError] = useState("");
-
-//   const handleSubmit = (e: any) => {
-//     e.preventDefault();
-//     setChatlog((prev) => [...prev, { type: "user", message: data }]);
-//     setData("");
-//   };
-//   const handleChange = (e: any) => {
-//     setData(e.target.value);
-//   };
-
-//   const sendMessage = ({ message }: any) => {
-//     // these are the details necessary for the  bot to respond
-//     const url = "https://api.openai.com/v1/chat/completions";
-//     const Header = {
-//       "content-type": "application/json",
-//       Authorization: `Bearer ${process.env.API_CHATBOT_KEY}`,
-//     };
-//     const data = {
-//       model: "gpt-4-turbo",
-//       message: [
-//         {
-//           role: "system",
-//           content: "You are a helpful assistant.",
-//         },
-//       ],
-//     };
-//     setLoading(true);
-//     // here we are  making the API call to OpenAI and getting the  response back in JSON format
-//     try {
-//       const fetchData = async () => {
-//         const response = await axios.post(url, data, Header);
-//         console.log(response.data);
-//         setChatlog({prev} =>[...prev, {type:"bot" , message:response.data.choices[0].message.content}])
-//      setLoading(false)
-//       };
-//       fetchData();
-//     } catch (error: any) {
-//       setError(`Error! ${error.message}`);
-//     }
-//   };
-
-//   useEffect(() => {}, []);
-//   return (
-//     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-//       <h1> CHATGPT </h1>
-//       {error && <div>{error}</div>}
-//       <form onSubmit={handleSubmit}>
-//         <Input
-//           type="text"
-//           onChange={handleChange}
-//           placeholder="Enter your request"
-//           value={data}
-//         />
-
-//         <Button>Submit </Button>
-//       </form>
-//     </main>
-//   );
-// }
-
+"use client";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,8 +8,9 @@ export default function Home() {
   const [data, setData] = useState("");
   const [loading, setLoading] = useState(false);
   const [chatlog, setChatlog] = useState([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(false);
 
+  console.log("API Key:", process.env.OPENAI_API_KEY);
   const handleSubmit = (e: any) => {
     e.preventDefault();
     setChatlog((prevChatlog) => [
@@ -97,11 +28,11 @@ export default function Home() {
   const sendMessage = async (message: any) => {
     const url = "https://api.openai.com/v1/chat/completions";
     const headers = {
-      "content-type": "application/json",
-      Authorization: `Bearer ${process.env.API_CHATBOT_KEY}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     };
     const data = {
-      model: "gpt-3.5-turbo-0125",
+      model: "gpt-4",
       message: [
         {
           role: "system",
@@ -117,6 +48,10 @@ export default function Home() {
         ...prevChatlog,
         { type: "bot", message: response.data.choices[0].message.content },
       ]);
+
+      if (response.data) {
+        setError(false);
+      }
     } catch (error: any) {
       setError(`Error! ${error.message}`);
     } finally {
@@ -138,22 +73,26 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1>CHATGPT</h1>
-      {error && <div>{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          onChange={handleChange}
-          placeholder="Enter your request"
-          value={data}
-        />
-        <Button>Submit</Button>
-      </form>
+
       {/* Display chat history */}
       {chatlog.map((message, index) => (
         <div key={index}>
           {message.type}: {message.message}
         </div>
       ))}
+      {error && <div>{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="flex justify-between items-center ">
+          <Input
+            type={"text"}
+            onChange={handleChange}
+            placeholder="Enter your request"
+            value={data}
+            className="mx-4 sm:min-w-96  md:min-w-[600px] border-spacing-6 rounded-sm  border"
+          />
+          <Button>Send</Button>
+        </div>
+      </form>
     </main>
   );
 }
